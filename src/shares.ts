@@ -33,11 +33,11 @@ const Fr = bn254.fields.Fr
 // aggregatePartialSignatures takes an array of partial signatures and creates a final group signature
 // (presuming there are threshold or more partials!)
 export function aggregateGroupSignature(partials: Array<PartialSignature>): Uint8Array {
-    const xs = partials.map((entry) => entry.index);
+    const xs = partials.map((entry) => entry.index)
     let agg = bn254.G1.ProjectivePoint.ZERO
 
     for (let i = 0; i < partials.length; i++) {
-        const entry = partials[i]!
+        const entry = partials[i]
         const sig = bn254.G1.ProjectivePoint.fromHex(entry.signature)
         const term = sig.multiply(lagrangeCoeff0(i, xs))
         agg = agg.add(term)
