@@ -16,13 +16,6 @@ jobs:
         with:
           node-version: 22.9.0
 
-      - name: Bump version and push tag
-        if: github.ref == 'refs/heads/master'
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install dependencies
         run: npm ci
 
