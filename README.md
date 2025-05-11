@@ -29,11 +29,9 @@ const partialSignature = signPartial(myShare, messageAsBytes)
 
 // once you've received `threshold` count of partial signatures, 
 // you can reconstruct a valid group signature and verify it as follows
-
 const partialSignatures = [] // imagine we've gathered this from our shareholders; we need `threshold` or more!
 const groupSignature = aggregateGroupSignature(partialSignatures)
 const success = verify(publicKey, message, groupSignature) 
 assert(success) // this will blow up if your signature is invalid!
-
 
 ```
