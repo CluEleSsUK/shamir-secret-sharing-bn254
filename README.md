@@ -1,5 +1,7 @@
 # shamir-secret-sharing-bn254
 
+![build](https://github.com/CluEleSsUK/shamir-secret-sharing-bn254/actions/workflows/build.yml/badge.svg)
+
 A user-friendly wrapper around [@noble/curves](https://github.com/paulmillr/noble-curves) for creating a secret, splitting it into keyshares, and operating with the keyshares.
 Public keys are on $G2$ and signatures are on $G1$.
 
