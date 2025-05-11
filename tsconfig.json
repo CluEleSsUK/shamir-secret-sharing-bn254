@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "build",
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "composite": false,
+    "module": "esnext",
+    "target": "es2020",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src"]
+}

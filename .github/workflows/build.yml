@@ -1,0 +1,48 @@
+name: build
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+    tags:
+      - .*
+
+jobs:
+  build_test_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22.9.0
+
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/master'
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile the typescript
+        run: npm run build
+
+      - name: Lint the code
+        run: npm run lint
+
+      - name: Run the tests
+        run: npm test
+
+      - name: Copy relevant documentation into the build folder
+        run: cp package.json README.md LICENSE-APACHE LICENSE-MIT ./dist
+
+      - name: Publish to npmjs
+        uses: JS-DevTools/npm-publish@v1
+        if: github.ref == 'refs/heads/master'
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: package.json
+          # don't try and deploy if versions haven't changed
+          check-version: true
