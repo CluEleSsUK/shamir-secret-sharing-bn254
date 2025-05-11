@@ -20,9 +20,10 @@ const shares = split(secretKey, shareCount, threshold)
 
 // now you'd give each of your key shares to some party,
 // and they'd sign a message with their share as follows
+const myShare = "" // imagine this is the share they received from `shares` above
 const message = "hello world"
 const messageAsBytes = new TextEncoder().encode(message)
-const partialSignature = signPartial(shares[0], messageAsBytes)
+const partialSignature = signPartial(myShare, messageAsBytes)
 
 // once you've received `threshold` count of partial signatures, 
 // you can reconstruct a valid group signature and verify it as follows
