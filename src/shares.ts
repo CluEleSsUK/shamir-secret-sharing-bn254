@@ -83,7 +83,7 @@ export function split(secret: SecretKey, numberOfShares: number, threshold: numb
     // evaluate at x = 1..numberOfShares
     const shares: Array<SecretKeyShare> = []
     for (let x = 1n; x <= numberOfShares; x++) {
-        let share = 0n;
+        let share = 0n
         // horner’s method: share = evaluations[0] + evaluations[1]*x + ... + evaluations[threshold-1]*x^(threshold-1)
         for (let i = evaluations.length - 1; i >= 0; i--) {
             const rhs = evaluations[i]
