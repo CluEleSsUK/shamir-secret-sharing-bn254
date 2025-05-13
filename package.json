@@ -1,6 +1,6 @@
 {
   "name": "shamir-secret-sharing-bn254",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.mjs",
@@ -9,11 +9,11 @@
     ".": {
       "require": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "default": "./dist/cjs/index.cjs"
       },
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./dist/esm/index.mjs"
       }
     }
   },
