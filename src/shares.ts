@@ -1,9 +1,9 @@
 import {bn254} from "@kevincharm/noble-bn254-drand"
 import {randomBytes} from "@noble/hashes/utils"
 
-type SecretKey = { sk: Uint8Array }
-type PublicKey = { pk: Uint8Array }
-type SecretKeyShare = { index: bigint, share: bigint }
+export type SecretKey = { sk: Uint8Array }
+export type PublicKey = { pk: Uint8Array }
+export type SecretKeyShare = { index: bigint, share: bigint }
 
 export function createPrivateKey(): SecretKey {
     return {sk: bn254.utils.randomPrivateKey()}
@@ -27,7 +27,7 @@ export function verify(pk: PublicKey, message: Uint8Array, signature: Uint8Array
     return bn254.verifyShortSignature(signature, message, pk.pk)
 }
 
-type PartialSignature = { index: bigint, signature: Uint8Array }
+export type PartialSignature = { index: bigint, signature: Uint8Array }
 const Fr = bn254.fields.Fr
 
 // aggregatePartialSignatures takes an array of partial signatures and creates a final group signature
@@ -110,3 +110,4 @@ function randomFr(): bigint {
 function encodeBigint(input: Uint8Array): bigint {
     return bn254.fields.Fr.fromBytes(input)
 }
+
