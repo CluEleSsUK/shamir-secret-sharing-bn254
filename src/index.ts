@@ -1,30 +1,50 @@
 import {bn254} from "@kevincharm/noble-bn254-drand"
 import {randomBytes} from "@noble/hashes/utils"
 
+// these are some helper wrappers so you don't end up passing the wrong byte array to the wrong function.
+// most functions take both variants anyway
 export type SecretKey = { sk: Uint8Array }
 export type PublicKey = { pk: Uint8Array }
+export type PublicKeyShare = { index: bigint, pk: Uint8Array }
 export type SecretKeyShare = { index: bigint, share: bigint }
 
 export function createPrivateKey(): SecretKey {
     return {sk: bn254.utils.randomPrivateKey()}
 }
 
-export function createPublicKey(secretKey: SecretKey): PublicKey {
-    const sk = bn254.fields.Fr.fromBytes(secretKey.sk)
-    const pk = bn254.G2.ProjectivePoint.BASE.multiply(sk)
+export function createPublicKey(secretKey: SecretKey | Uint8Array): PublicKey {
+    const sk = secretKey instanceof Uint8Array ? secretKey : secretKey.sk
+    const fieldElement = bn254.fields.Fr.fromBytes(sk)
+    const pk = bn254.G2.ProjectivePoint.BASE.multiply(fieldElement)
     return {pk: pk.toRawBytes()}
 }
 
-export function sign(sk: SecretKey, message: Uint8Array): Uint8Array {
-    return bn254.signShortSignature(message, sk.sk)
+export function createPublicKeyShare(secretKeyShare: SecretKeyShare): PublicKeyShare {
+    return {
+        index: secretKeyShare.index,
+        pk: bn254.G2.ProjectivePoint.BASE.multiply(secretKeyShare.share).toRawBytes()
+    }
 }
 
-export function signPartial(sk: SecretKeyShare, message: Uint8Array): Uint8Array {
-    return bn254.signShortSignature(message, sk.share)
+export function sign(secretKey: SecretKey | Uint8Array, message: Uint8Array): Uint8Array {
+    const sk = secretKey instanceof Uint8Array ? secretKey : secretKey.sk
+    return bn254.signShortSignature(message, sk)
 }
 
-export function verify(pk: PublicKey, message: Uint8Array, signature: Uint8Array): boolean {
-    return bn254.verifyShortSignature(signature, message, pk.pk)
+export function signPartial(secretKeyShare: SecretKeyShare, message: Uint8Array): Uint8Array {
+    const share = secretKeyShare instanceof Uint8Array ? secretKeyShare : secretKeyShare.share
+    return bn254.signShortSignature(message, share)
+}
+
+export function verify(publicKey: PublicKey | Uint8Array, message: Uint8Array, signature: Uint8Array): boolean {
+    const pk = publicKey instanceof Uint8Array ? publicKey : publicKey.pk
+    return bn254.verifyShortSignature(signature, message, pk)
+}
+
+export function verifyPartial(publicKey: PublicKeyShare | Uint8Array, message: Uint8Array, partialSignature: PartialSignature | Uint8Array): boolean {
+    const sig = partialSignature instanceof Uint8Array ? partialSignature : partialSignature.signature
+    const pk = publicKey instanceof Uint8Array ? publicKey : publicKey.pk
+    return bn254.verifyShortSignature(sig, message, pk)
 }
 
 export type PartialSignature = { index: bigint, signature: Uint8Array }
@@ -66,7 +86,8 @@ function lagrangeCoeff0(index: number, xs: bigint[]): bigint {
 }
 
 // split splits a secret key into `n` shares with threshold `t`
-export function split(secret: SecretKey, numberOfShares: number, threshold: number): Array<SecretKeyShare> {
+export function split(secretKey: SecretKey | Uint8Array, numberOfShares: number, threshold: number): Array<SecretKeyShare> {
+    const sk = secretKey instanceof Uint8Array ? secretKey : secretKey.sk
     if (threshold > numberOfShares) {
         throw new Error("threshold can'threshold be lower than node count - you probably have the parameters the wrong way round")
     }
@@ -75,7 +96,7 @@ export function split(secret: SecretKey, numberOfShares: number, threshold: numb
     }
 
     // sample random polynomial of degree (threshold-1), evaluations[0]=secret
-    const evaluations: bigint[] = [encodeBigint(secret.sk)]
+    const evaluations: bigint[] = [encodeBigint(sk)]
     for (let i = 1; i < threshold; i++) {
         evaluations.push(randomFr())
     }
@@ -110,4 +131,3 @@ function randomFr(): bigint {
 function encodeBigint(input: Uint8Array): bigint {
     return bn254.fields.Fr.fromBytes(input)
 }
-
