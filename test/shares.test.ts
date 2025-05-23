@@ -42,6 +42,30 @@ describe("shares", () => {
         expect(verify(pk, m, finalSig)).toBeTruthy()
     })
 
+    it("threshold signatures in funny order verify", () => {
+        const m = Buffer.from("hello world")
+        const sk = createPrivateKey()
+        const pk = createPublicKey(sk)
+
+        const partialKeys = split(sk, 3, 2)
+        const partialSigs = partialKeys.map(k => ({ index: k.index, signature: signPartial(k, m) }))
+        const finalSig = aggregateGroupSignature([partialSigs[1], partialSigs[0]])
+
+        expect(verify(pk, m, finalSig)).toBeTruthy()
+    })
+
+    it("indexes matter for aggregation", () => {
+        const m = Buffer.from("hello world")
+        const sk = createPrivateKey()
+        const pk = createPublicKey(sk)
+
+        const partialKeys = split(sk, 3, 2)
+        const partialSigs = partialKeys.map(k => ({ index: k.index, signature: signPartial(k, m) }))
+        const finalSig = aggregateGroupSignature([{ index: 1n, signature: partialSigs[1].signature }, { index: 2n, signature: partialSigs[0].signature }])
+
+        expect(verify(pk, m, finalSig)).toBeFalsy()
+    })
+
     it("single partial does not verify for group public key", () => {
         const m = Buffer.from("hello world")
         const sk = createPrivateKey()
