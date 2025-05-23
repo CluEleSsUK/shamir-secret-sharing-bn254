@@ -68,7 +68,7 @@ export function aggregateGroupSignature(partials: Array<PartialSignature>): Uint
 
 function lagrangeCoeff0(index: number, xs: bigint[]): bigint {
     const xi = xs[index]
-    if (!xi) {
+    if (xi == null) {
         throw new Error("xi expected a value")
     }
     let num = 1n
@@ -76,7 +76,7 @@ function lagrangeCoeff0(index: number, xs: bigint[]): bigint {
     for (let i = 0; i < xs.length; i++) {
         if (i === index) continue
         const xj = xs[i]
-        if (!xj) {
+        if (xj == null) {
             throw new Error("xj expected a value")
         }
         num = Fr.mul(num, Fr.neg(xj))      // (0 − xj)
@@ -108,7 +108,7 @@ export function split(secretKey: SecretKey | Uint8Array, numberOfShares: number,
         // horner’s method: share = evaluations[0] + evaluations[1]*x + ... + evaluations[threshold-1]*x^(threshold-1)
         for (let i = evaluations.length - 1; i >= 0; i--) {
             const rhs = evaluations[i]
-            if (!rhs) {
+            if (rhs == null) {
                 throw new Error("invalid split")
             }
             share = bn254.fields.Fr.add(bn254.fields.Fr.mul(share, x), rhs)
