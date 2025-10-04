@@ -1,5 +1,5 @@
-import {bn254} from "@kevincharm/noble-bn254-drand"
-import {randomBytes} from "@noble/hashes/utils"
+import { bn254 } from "@kevincharm/noble-bn254-drand"
+import { randomBytes } from "@noble/hashes/utils"
 
 // these are some helper wrappers so you don't end up passing the wrong byte array to the wrong function.
 // most functions take both variants anyway
@@ -9,14 +9,14 @@ export type PublicKeyShare = { index: bigint, pk: Uint8Array }
 export type SecretKeyShare = { index: bigint, share: bigint }
 
 export function createPrivateKey(): SecretKey {
-    return {sk: bn254.utils.randomPrivateKey()}
+    return { sk: bn254.utils.randomPrivateKey() }
 }
 
 export function createPublicKey(secretKey: SecretKey | Uint8Array): PublicKey {
     const sk = secretKey instanceof Uint8Array ? secretKey : secretKey.sk
     const fieldElement = bn254.fields.Fr.fromBytes(sk)
     const pk = bn254.G2.ProjectivePoint.BASE.multiply(fieldElement)
-    return {pk: pk.toRawBytes()}
+    return { pk: pk.toRawBytes() }
 }
 
 export function createPublicKeyShare(secretKeyShare: SecretKeyShare): PublicKeyShare {
@@ -31,13 +31,19 @@ export function sign(secretKey: SecretKey | Uint8Array, message: Uint8Array): Ui
     return bn254.signShortSignature(message, sk)
 }
 
-export function signPartial(secretKeyShare: SecretKeyShare, message: Uint8Array): Uint8Array {
+export function signPartial(secretKeyShare: SecretKeyShare, message: Uint8Array, DST?: Uint8Array): Uint8Array {
     const share = secretKeyShare instanceof Uint8Array ? secretKeyShare : secretKeyShare.share
+    if (DST) {
+        return bn254.signShortSignature(message, share, { DST })
+    }
     return bn254.signShortSignature(message, share)
 }
 
-export function verify(publicKey: PublicKey | Uint8Array, message: Uint8Array, signature: Uint8Array): boolean {
+export function verify(publicKey: PublicKey | Uint8Array, message: Uint8Array, signature: Uint8Array, DST?: Uint8Array): boolean {
     const pk = publicKey instanceof Uint8Array ? publicKey : publicKey.pk
+    if (DST) {
+        return bn254.verifyShortSignature(signature, message, pk, { DST })
+    }
     return bn254.verifyShortSignature(signature, message, pk)
 }
 
@@ -113,7 +119,7 @@ export function split(secretKey: SecretKey | Uint8Array, numberOfShares: number,
             }
             share = bn254.fields.Fr.add(bn254.fields.Fr.mul(share, x), rhs)
         }
-        shares.push({index: x, share})
+        shares.push({ index: x, share })
     }
 
     return shares

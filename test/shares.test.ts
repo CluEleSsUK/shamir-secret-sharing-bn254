@@ -54,6 +54,7 @@ describe("shares", () => {
         expect(verify(pk, m, finalSig)).toBeTruthy()
     })
 
+
     it("indexes matter for aggregation", () => {
         const m = Buffer.from("hello world")
         const sk = createPrivateKey()
@@ -61,7 +62,10 @@ describe("shares", () => {
 
         const partialKeys = split(sk, 3, 2)
         const partialSigs = partialKeys.map(k => ({ index: k.index, signature: signPartial(k, m) }))
-        const finalSig = aggregateGroupSignature([{ index: 1n, signature: partialSigs[1].signature }, { index: 2n, signature: partialSigs[0].signature }])
+        const finalSig = aggregateGroupSignature([{ index: 1n, signature: partialSigs[1].signature }, {
+            index: 2n,
+            signature: partialSigs[0].signature
+        }])
 
         expect(verify(pk, m, finalSig)).toBeFalsy()
     })
@@ -125,4 +129,29 @@ describe("shares", () => {
         expect(verifyPartial(partialPublicKeys[0], m, partialSigs[0].signature)).toBeTruthy()
     })
 
+    it("passing a custom DST works", () => {
+        const DST = Buffer.from("wow-thats-funny")
+        const m = Buffer.from("hello world")
+        const sk = createPrivateKey()
+        const pk = createPublicKey(sk)
+
+        const partialKeys = split(sk, 3, 2)
+        const partialSigs = partialKeys.map(k => ({ index: k.index, signature: signPartial(k, m, DST) }))
+        const finalSig = aggregateGroupSignature(partialSigs)
+
+        expect(verify(pk, m, finalSig, DST)).toBeTruthy()
+    })
+
+    it("mismatch in DST fails", () => {
+        const DST = Buffer.from("wow-thats-funny")
+        const m = Buffer.from("hello world")
+        const sk = createPrivateKey()
+        const pk = createPublicKey(sk)
+
+        const partialKeys = split(sk, 3, 2)
+        const partialSigs = partialKeys.map(k => ({ index: k.index, signature: signPartial(k, m, DST) }))
+        const finalSig = aggregateGroupSignature(partialSigs)
+
+        expect(verify(pk, m, finalSig, Buffer.from("wrong-dst"))).toBeFalsy()
+    })
 })
